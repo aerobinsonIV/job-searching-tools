@@ -1,13 +1,11 @@
 import os
 import re
 
-directory = "dumps/allegro"
-
 def read_file(path):
     with open(path, "r", encoding = 'utf8') as f:
         return f.read()
 
-def find_phone_numbers(input_text):
+def find_phone_numbers(input_text, must_include):
     phone_num_regexes = []
 
     # List of potential phone number patterns
@@ -18,14 +16,31 @@ def find_phone_numbers(input_text):
     phone_numbers = []
 
     for regex in phone_num_regexes:
-        numbers = re.findall(regex, input_text)
-        phone_numbers += numbers
+        matches = re.findall(regex, input_text)
+        phone_numbers += matches
     
     return phone_numbers
 
+def find_email_addrs(input_text, must_include):
+    email_regexes = []
+
+    # FIXME:
+    # lyon@avnet and similar addrs without tld somehow getting through
+    email_regexes.append(re.compile(r'[a-zA-Z0-9.+!%-]{1,64}@[a-zA-Z0-9+!%-]{1,64}.(?:com|net|org|gov|io|xyz)'))
+
+    emails = []
+
+    for regex in email_regexes:
+        matches = re.findall(regex, input_text)
+        for match in matches:
+            if must_include in match:
+                emails.append(match.strip())
+    
+    return emails
+
 # Take in a folder and a function that returns a list of contact info items in a string
 # Run search function on all files in folder and display new unique results for each file
-def find_in_all_files(directory, search_function):
+def find_in_all_files(directory, search_function, must_include):
     
     all = []
 
@@ -36,7 +51,7 @@ def find_in_all_files(directory, search_function):
         path = os.path.join(directory, filename)
         text = read_file(path)
         
-        this_page_items = search_function(text)
+        this_page_items = search_function(text, must_include)
 
         # Are there any matches on this page?
         if len(this_page_items) > 0:
@@ -56,5 +71,5 @@ def find_in_all_files(directory, search_function):
 
                 for item in unique:
                     print(item)
-
-find_in_all_files(directory, find_phone_numbers)
+                
+                all += unique
