@@ -13,7 +13,7 @@ url = sys.argv[1]
 dir = sys.argv[2]
 crawl_depth = int(sys.argv[3])
 
-company_name = url[url.find("://") + 3:url.find(".")]
+company_name = url[url.find("://www.") + 7:-5]
 
 print(company_name)
 
