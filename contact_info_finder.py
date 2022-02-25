@@ -1,7 +1,7 @@
 import os
 import re
 
-directory = "dumps/ams_dump"
+directory = "dumps/allegro"
 
 def read_file(path):
     with open(path, "r", encoding = 'utf8') as f:
@@ -12,7 +12,7 @@ def find_phone_numbers(input_text):
 
     # List of potential phone number patterns
     phone_num_regexes.append(re.compile(r'\d\d\d-\d\d\d-\d\d\d\d'))
-    phone_num_regexes.append(re.compile(r'\d\d\d\d\d\d\d\d\d\d'))
+    # phone_num_regexes.append(re.compile(r'\d\d\d\d\d\d\d\d\d\d'))
     phone_num_regexes.append(re.compile(r'\(\d\d\d\)-\d\d\d-\d\d\d\d'))
 
     phone_numbers = []
@@ -23,23 +23,38 @@ def find_phone_numbers(input_text):
     
     return phone_numbers
 
-
-def process_all_files(directory):
+# Take in a folder and a function that returns a list of contact info items in a string
+# Run search function on all files in folder and display new unique results for each file
+def find_in_all_files(directory, search_function):
     
+    all = []
+
     all_files = os.listdir(directory)
     for filename in all_files:
-        
-        # Convert filename back to link and print
-        link_equivalent = str(filename).replace("~", "/").replace("//", "://")
-        print(f"\n{link_equivalent}:")
         
         # Read downloaded page
         path = os.path.join(directory, filename)
         text = read_file(path)
         
-        phone_numbers = find_phone_numbers(text)
+        this_page_items = search_function(text)
 
-        for phone_number in phone_numbers:
-            print(phone_number)
+        # Are there any matches on this page?
+        if len(this_page_items) > 0:
 
-process_all_files(directory)
+            unique = []
+            for item in this_page_items:
+                
+                # Have we already found this item on this or another page?
+                if item not in all and item not in unique:
+                    unique.append(item)
+        
+            # Skip printing this page's link if there are no unique items to show on it
+            if len(unique) > 0:
+                # Convert filename back to link and print
+                link_equivalent = str(filename).replace("~", "/").replace("//", "://")
+                print(f"\n{link_equivalent}:")
+
+                for item in unique:
+                    print(item)
+
+find_in_all_files(directory, find_phone_numbers)
