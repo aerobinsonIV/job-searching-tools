@@ -13,7 +13,8 @@ url = sys.argv[1]
 dir = sys.argv[2]
 crawl_depth = int(sys.argv[3])
 
-company_name = url[url.find("://www.") + 7:-5]
+front_trimmed_url = url[url.find("://www.") + 7:]
+company_name = front_trimmed_url[:front_trimmed_url.find(".")]
 
 print(company_name)
 

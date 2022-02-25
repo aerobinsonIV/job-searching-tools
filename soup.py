@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 def soup_url(url, headers=""):
     response = requests.get(url, headers)
 
-    html = response.text
+    html = (response.text).strip()
 
     return BeautifulSoup(str(html), 'html.parser')
 
@@ -14,5 +14,6 @@ def soup_file(filename):
     
     with open(filename, "r") as f:
         html = f.read()
+        html = html.strip()
 
     return BeautifulSoup(str(html), 'html.parser')

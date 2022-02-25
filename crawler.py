@@ -64,7 +64,7 @@ def get_links(soup, base_url):
             cleaned_link = clean_link(href, base_url)
             if is_valid_link(cleaned_link, base_url):
                 links.append(cleaned_link)
-
+                
     return links
 
 def dump_nodes_to_files(node_list, output_dir):
