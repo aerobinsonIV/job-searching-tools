@@ -1,6 +1,7 @@
 from soup import *
 
-base = "http://www.absolute-metrology.com/"
+base_url = "http://www.absolute-metrology.com/"
+start_url = "http://www.absolute-metrology.com/index.html"
 
 class Node:
     def __init__(self, url, soup, parent, depth: int):
@@ -10,12 +11,7 @@ class Node:
         self.depth = depth
     
     def __eq__(self, other):
-        if self.url == other.url:
-            print(f"{self} == {other}")
-            return True
-        else:
-            print(f"{self} != {other}")
-            return False
+        return self.url == other.url
 
     def __repr__(self) -> str:
         return f"{self.url} @ depth {self.depth}"
@@ -28,9 +24,9 @@ def is_rel_link(link):
 
 def clean_link(link, base):
     if is_rel_link(link):
-        return base + link
+        return (base + link).strip()
     else:
-        return link
+        return link.strip()
 
 def is_valid_link(link):
     
@@ -51,21 +47,20 @@ def get_links(soup):
         href = anchor['href']
         if href not in links:
             if is_valid_link(href):
-                links.append(clean_link(href, base))
+                links.append(clean_link(href, base_url))
 
     return links
 
-
-base_url = "http://www.absolute-metrology.com/"
 crawl_depth = 99
 
-base_node = Node(base_url, None, None, 0)
+base_node = Node(start_url, None, None, 0)
 
 queue = []
 queue.append(base_node)
 
 searched = []
 
+# Main loop
 while len(queue) > 0:
 
     # Pop a non-expanded node off the queue
@@ -87,9 +82,11 @@ while len(queue) > 0:
     # Make nodes for newly found links and append 
     for link in links:
         new_node = Node(link, None, current_node, current_node.depth + 1)
-        if new_node not in queue and new_node not in searched:
-            print(f"Enqueuing {new_node}")
+        if (new_node not in queue) and (new_node not in searched) and (new_node != current_node):
+            # print(f"Enqueuing {new_node}")
             queue.append(new_node)
+        # else:
+            # print(f"Not enqueuing {new_node}")
 
     searched.append(current_node)
 
@@ -97,10 +94,3 @@ print("\nDone.\nSearched nodes:\n")
 
 for node in searched:
     print(node)
-
-
-# ams_soup = soup_file("index.html")
-# links = get_links(ams_soup)
-# print("\n\n\n")
-# for link in links:
-#     print(link)
