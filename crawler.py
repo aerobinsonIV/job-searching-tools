@@ -1,7 +1,12 @@
+import shutil
+import os
 from soup import *
 
 base_url = "http://www.absolute-metrology.com/"
 start_url = "http://www.absolute-metrology.com/index.html"
+
+crawl_depth = 99 
+output_dir = "ams_dump"
 
 class Node:
     def __init__(self, url, soup, parent, depth: int):
@@ -51,7 +56,20 @@ def get_links(soup):
 
     return links
 
-crawl_depth = 99
+def dump_nodes_to_files(node_list, output_dir):
+    
+    try:
+        shutil.rmtree(output_dir)
+    except:
+        pass
+    
+    os.mkdir(output_dir)
+
+    for node in node_list:
+        filename = node.url.replace("/", "~").replace(":", "")
+        path = os.path.join(output_dir, filename)
+        with open(path, "w", encoding = 'utf8') as f:
+            f.write(str(node.soup))
 
 base_node = Node(start_url, None, None, 0)
 
@@ -68,10 +86,9 @@ while len(queue) > 0:
 
     if current_node.depth >= crawl_depth:
         searched.append(current_node)
-        print(f"Not expanding {current_node}")
         continue
 
-    print(f"Expanding {current_node}")
+    print(f"Found {current_node}")
     
     # Download page at URL
     current_node.soup = soup_url(current_node.url)
@@ -83,14 +100,8 @@ while len(queue) > 0:
     for link in links:
         new_node = Node(link, None, current_node, current_node.depth + 1)
         if (new_node not in queue) and (new_node not in searched) and (new_node != current_node):
-            # print(f"Enqueuing {new_node}")
             queue.append(new_node)
-        # else:
-            # print(f"Not enqueuing {new_node}")
 
     searched.append(current_node)
 
-print("\nDone.\nSearched nodes:\n")
-
-for node in searched:
-    print(node)
+dump_nodes_to_files(searched, output_dir)
