@@ -2,14 +2,6 @@ import shutil
 import os
 from soup import *
 
-base_url = "https://www.allegromicro.com/en/"
-start_url = "https://www.allegromicro.com/en/"
-
-crawl_depth = 99 
-output_dir = "allegro"
-
-emails = []
-
 class Node:
     def __init__(self, url, soup, parent, depth: int):
         self.url = url
@@ -35,7 +27,7 @@ def clean_link(link, base):
     else:
         return link.strip()
 
-def is_valid_link(link):
+def is_valid_link(link, base_url):
     
     invalid_extensions = ["jpg", "png"]
     
@@ -52,17 +44,16 @@ def is_valid_link(link):
     if "//" in link[10:]:
         return False
 
-    if "mailto" in link:
-        emails.append(link)
+    if "mailto:" in link:
         return False
     
-    # Check domain
+    # Check domain, we don't care about links that lead to external sites
     if link[0:len(base_url)] != base_url:
         return False
 
     return True
 
-def get_links(soup):
+def get_links(soup, base_url):
     links = []
 
     anchors = soup.find_all('a', href = True)
@@ -71,7 +62,7 @@ def get_links(soup):
         href = anchor['href']
         if href not in links:
             cleaned_link = clean_link(href, base_url)
-            if is_valid_link(cleaned_link):
+            if is_valid_link(cleaned_link, base_url):
                 links.append(cleaned_link)
 
     return links
@@ -91,41 +82,39 @@ def dump_nodes_to_files(node_list, output_dir):
         with open(path, "w", encoding = 'utf8') as f:
             f.write(str(node.soup))
 
-base_node = Node(start_url, None, None, 0)
+def crawl_and_save(base_url, crawl_depth, output_dir):
 
-queue = []
-queue.append(base_node)
+    base_node = Node(base_url, None, None, 0)
 
-searched = []
+    queue = []
+    queue.append(base_node)
 
-# Main loop
-while len(queue) > 0:
+    searched = []
 
-    # Pop a non-expanded node off the queue
-    current_node = queue.pop(0)
+    # Main loop
+    while len(queue) > 0:
 
-    if current_node.depth >= crawl_depth:
+        # Pop a non-expanded node off the queue
+        current_node = queue.pop(0)
+
+        if current_node.depth >= crawl_depth:
+            searched.append(current_node)
+            continue
+
+        print(f"Found {current_node}")
+        
+        # Download page at URL
+        current_node.soup = soup_url(current_node.url)
+
+        # Get links on page
+        links = get_links(current_node.soup, base_url)
+
+        # Make nodes for newly found links and append 
+        for link in links:
+            new_node = Node(link, None, current_node, current_node.depth + 1)
+            if (new_node not in queue) and (new_node not in searched) and (new_node != current_node):
+                queue.append(new_node)
+
         searched.append(current_node)
-        continue
 
-    print(f"Found {current_node}")
-    
-    # Download page at URL
-    current_node.soup = soup_url(current_node.url)
-
-    # Get links on page
-    links = get_links(current_node.soup)
-
-    # Make nodes for newly found links and append 
-    for link in links:
-        new_node = Node(link, None, current_node, current_node.depth + 1)
-        if (new_node not in queue) and (new_node not in searched) and (new_node != current_node):
-            queue.append(new_node)
-
-    searched.append(current_node)
-
-dump_nodes_to_files(searched, output_dir)
-
-print(f"Found emails:")
-for email in emails:
-    print(email)
+    dump_nodes_to_files(searched, output_dir)
