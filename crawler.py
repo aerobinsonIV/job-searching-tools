@@ -35,13 +35,23 @@ def clean_link(link, base):
 
 def is_valid_link(link):
     
-    valid_extensions = ["html", "asp", "aspx", "php", "htm", "xhtml"]
+    invalid_extensions = ["jpg", "png"]
     
-    for ext in valid_extensions:
+    for ext in invalid_extensions:
         if link[-len(ext):] == ext:
-            return True
+            return False
 
-    return False
+    if "#" in link:
+        return False
+
+    if "javascript:" in link:
+        return False
+
+    # Check domain
+    if link[0:len(base_url)] != base_url:
+        return False
+
+    return True
 
 def get_links(soup):
     links = []
@@ -51,8 +61,9 @@ def get_links(soup):
     for anchor in anchors:
         href = anchor['href']
         if href not in links:
-            if is_valid_link(href):
-                links.append(clean_link(href, base_url))
+            cleaned_link = clean_link(href, base_url)
+            if is_valid_link(cleaned_link):
+                links.append(cleaned_link)
 
     return links
 
