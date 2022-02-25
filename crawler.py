@@ -2,11 +2,13 @@ import shutil
 import os
 from soup import *
 
-base_url = "http://www.absolute-metrology.com/"
-start_url = "http://www.absolute-metrology.com/index.html"
+base_url = "https://www.allegromicro.com/en/"
+start_url = "https://www.allegromicro.com/en/"
 
 crawl_depth = 99 
-output_dir = "ams_dump"
+output_dir = "allegro"
+
+emails = []
 
 class Node:
     def __init__(self, url, soup, parent, depth: int):
@@ -47,6 +49,13 @@ def is_valid_link(link):
     if "javascript:" in link:
         return False
 
+    if "//" in link[10:]:
+        return False
+
+    if "mailto" in link:
+        emails.append(link)
+        return False
+    
     # Check domain
     if link[0:len(base_url)] != base_url:
         return False
@@ -77,7 +86,7 @@ def dump_nodes_to_files(node_list, output_dir):
     os.mkdir(output_dir)
 
     for node in node_list:
-        filename = node.url.replace("/", "~").replace(":", "")
+        filename = node.url.replace("/", "~").replace(":", "").replace("?", "")
         path = os.path.join(output_dir, filename)
         with open(path, "w", encoding = 'utf8') as f:
             f.write(str(node.soup))
@@ -116,3 +125,7 @@ while len(queue) > 0:
     searched.append(current_node)
 
 dump_nodes_to_files(searched, output_dir)
+
+print(f"Found emails:")
+for email in emails:
+    print(email)
