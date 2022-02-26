@@ -1,24 +1,23 @@
 import requests
-from bs4 import BeautifulSoup
 
 # Take in a URL and return a beautifulSoup object of the page
-def soup_url(url, headers=""):
+def html_from_url(url, headers=""):
     
     try:
         response = requests.get(url, headers)
 
         html = (response.text).strip()
 
-        return BeautifulSoup(str(html), 'html.parser')
+        return html
     except:
         print(f"Failed to get {url}")
-        return BeautifulSoup("", 'html.parser')
+        return ""
 
 # Read in an HTML file and return a beautifulSoup object of the page
-def soup_file(filename):
+def html_from_file(filename):
     
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding = 'utf8') as f:
         html = f.read()
         html = html.strip()
 
-    return BeautifulSoup(str(html), 'html.parser')
+    return html

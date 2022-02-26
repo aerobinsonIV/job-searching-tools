@@ -25,10 +25,7 @@ def find_phone_numbers(input_text, must_include):
 
 def find_email_addrs(input_text, must_include):
     email_regexes = []
-
-    # FIXME:
-    # lyon@avnet and similar addrs without tld somehow getting through
-    email_regexes.append(re.compile(r'[a-zA-Z0-9.+!%-]{1,64}@[a-zA-Z0-9+!%-]{1,64}.(?:com|net|org|gov|io|xyz)'))
+    email_regexes.append(re.compile(r'[a-zA-Z0-9\.+!%-]{1,64}@[a-zA-Z0-9+!%-]{1,64}\.(?:com|net|org|gov|io|xyz)'))
 
     emails = []
 
@@ -75,3 +72,5 @@ def find_in_all_files(directory, search_function, must_include):
                     print(item)
                 
                 all += unique
+    if(len(all) == 0):
+        print("didn't find anything :(")
