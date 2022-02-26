@@ -10,7 +10,9 @@ def find_phone_numbers(input_text, must_include):
 
     # List of potential phone number patterns
     phone_num_regexes.append(re.compile(r'\d\d\d-\d\d\d-\d\d\d\d'))
-    # phone_num_regexes.append(re.compile(r'\d\d\d\d\d\d\d\d\d\d'))
+    phone_num_regexes.append(re.compile(r'tel:+\d\d\d\d\d\d\d\d\d\d'))
+    phone_num_regexes.append(re.compile(r'tel:+\d\d\d\d\d\d\d\d\d\d\d'))
+    phone_num_regexes.append(re.compile(r'tel:+\d\d\d\d\d\d\d\d\d\d\d\d'))
     phone_num_regexes.append(re.compile(r'\(\d\d\d\)-\d\d\d-\d\d\d\d'))
 
     phone_numbers = []

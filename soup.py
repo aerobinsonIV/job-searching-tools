@@ -3,11 +3,16 @@ from bs4 import BeautifulSoup
 
 # Take in a URL and return a beautifulSoup object of the page
 def soup_url(url, headers=""):
-    response = requests.get(url, headers)
+    
+    try:
+        response = requests.get(url, headers)
 
-    html = (response.text).strip()
+        html = (response.text).strip()
 
-    return BeautifulSoup(str(html), 'html.parser')
+        return BeautifulSoup(str(html), 'html.parser')
+    except:
+        print(f"Failed to get {url}")
+        return BeautifulSoup("", 'html.parser')
 
 # Read in an HTML file and return a beautifulSoup object of the page
 def soup_file(filename):
