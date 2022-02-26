@@ -30,11 +30,16 @@ def clean_link(link, base):
     
     # Convert accidental double / to single, remove query params
     single_slash_link = absolute_link[:9] + absolute_link[9:].replace("//", "/")
-    return single_slash_link[:single_slash_link.find('?')]
+
+    if "?" in single_slash_link:
+        return single_slash_link[:single_slash_link.find('?')]
+    else:
+        return single_slash_link
+
 
 def is_valid_link(link, base_url):
     
-    invalid_extensions = ["jpg", "png"]
+    invalid_extensions = ["jpg", "png", "css", "json", "js"]
     
     for ext in invalid_extensions:
         if link[-len(ext):] == ext:
