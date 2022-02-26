@@ -39,7 +39,7 @@ def clean_link(link, base):
 
 def is_valid_link(link, base_url):
     
-    invalid_extensions = ["jpg", "png", "css", "json", "js", "xml"]
+    invalid_extensions = ["jpg", "png", "css", "json", "js", "xml", "ico", "webmanifest", "svg"]
     
     for ext in invalid_extensions:
         if link[-len(ext):] == ext:
@@ -70,6 +70,9 @@ def get_links(html, base_url):
     links = []
 
     # Find all strings that match form href="/some/link"
+    
+    # https://regex101.com/ is useful for testing, more visual
+    # ? is means "lazy", i.e. match as few chars as possible. This matches the first closing double quote rather than the last.
     href_regex = re.compile(r'href=".*?"')
     hrefs = re.findall(href_regex, html)
 
