@@ -39,7 +39,7 @@ def clean_link(link, base):
 
 def is_valid_link(link, base_url):
     
-    invalid_extensions = ["jpg", "png", "css", "json", "js"]
+    invalid_extensions = ["jpg", "png", "css", "json", "js", "xml"]
     
     for ext in invalid_extensions:
         if link[-len(ext):] == ext:
