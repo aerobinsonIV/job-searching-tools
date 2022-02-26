@@ -13,10 +13,14 @@ url = sys.argv[1]
 dir = sys.argv[2]
 crawl_depth = int(sys.argv[3])
 
-front_trimmed_url = url[url.find("://www.") + 7:]
+if "www" in url:
+    front_trimmed_url = url[url.find("://www.") + 7:]
+else:
+    front_trimmed_url = url[url.find("://") + 3:]
+
 company_name = front_trimmed_url[:front_trimmed_url.find(".")]
 
-print(company_name)
+print(f"|{company_name}|")
 
 crawler.crawl_and_save(url, crawl_depth, dir)
 
