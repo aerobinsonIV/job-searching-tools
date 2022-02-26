@@ -1,11 +1,12 @@
 import shutil
 import os
-from soup import *
+import re
+from get_html import *
 
 class Node:
-    def __init__(self, url, soup, parent, depth: int):
+    def __init__(self, url, html, parent, depth: int):
         self.url = url
-        self.soup = soup
+        self.html = html
         self.parent = parent
         self.depth = depth
     
@@ -23,9 +24,13 @@ def is_rel_link(link):
 
 def clean_link(link, base):
     if is_rel_link(link):
-        return (base + link).strip()
+        absolute_link = (base + link).strip()
     else:
-        return link.strip()
+        absolute_link = link.strip()
+    
+    # Convert accidental double / to single, remove query params
+    single_slash_link = absolute_link[:9] + absolute_link[9:].replace("//", "/")
+    return single_slash_link[:single_slash_link.find('?')]
 
 def is_valid_link(link, base_url):
     
@@ -46,6 +51,9 @@ def is_valid_link(link, base_url):
 
     if "mailto:" in link:
         return False
+
+    if " " in link:
+        return False
     
     # Check domain, we don't care about links that lead to external sites
     if link[0:len(base_url)] != base_url:
@@ -53,18 +61,21 @@ def is_valid_link(link, base_url):
 
     return True
 
-def get_links(soup, base_url):
+def get_links(html, base_url):
     links = []
 
-    anchors = soup.find_all('a', href = True)
+    # Find all strings that match form href="/some/link"
+    href_regex = re.compile(r'href=".*?"')
+    hrefs = re.findall(href_regex, html)
 
-    for anchor in anchors:
-        href = anchor['href']
-        if href not in links:
-            cleaned_link = clean_link(href, base_url)
+    # Extract actual links, clean, return only unique links
+    for href in hrefs:
+        link = href[6:-1]
+        if link not in links:
+            cleaned_link = clean_link(link, base_url)
             if is_valid_link(cleaned_link, base_url):
                 links.append(cleaned_link)
-                
+
     return links
 
 def dump_nodes_to_files(node_list, output_dir):
@@ -80,7 +91,7 @@ def dump_nodes_to_files(node_list, output_dir):
         filename = node.url.replace("/", "~").replace(":", "").replace("?", "")
         path = os.path.join(output_dir, filename)
         with open(path, "w", encoding = 'utf8') as f:
-            f.write(str(node.soup))
+            f.write(str(node.html))
 
 def crawl_and_save(base_url, crawl_depth, output_dir):
 
@@ -104,10 +115,10 @@ def crawl_and_save(base_url, crawl_depth, output_dir):
         print(f"Found {current_node}")
         
         # Download page at URL
-        current_node.soup = soup_url(current_node.url)
+        current_node.html = html_from_url(current_node.url)
 
         # Get links on page
-        links = get_links(current_node.soup, base_url)
+        links = get_links(current_node.html, base_url)
 
         # Make nodes for newly found links and append 
         for link in links:
