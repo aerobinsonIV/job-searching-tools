@@ -43,6 +43,9 @@ def find_in_all_files(directory, search_function, must_include):
     
     all = []
 
+    output_file = os.path.join(directory, "report.txt")
+    f = open(output_file, "a")
+
     all_files = os.listdir(directory)
     for filename in all_files:
         
@@ -67,10 +70,15 @@ def find_in_all_files(directory, search_function, must_include):
                 # Convert filename back to link and print
                 link_equivalent = str(filename).replace("~", "/").replace("//", "://")
                 print(f"\n{link_equivalent}:")
+                f.write(f"{link_equivalent}:\n")
 
                 for item in unique:
                     print(item)
+                    f.write(f"{item}\n")
                 
                 all += unique
     if(len(all) == 0):
         print("didn't find anything :(")
+        f.write("didn't find anything :(")
+    
+    f.close()
