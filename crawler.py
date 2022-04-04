@@ -59,6 +59,9 @@ def is_valid_link(link, base_url):
 
     if " " in link:
         return False
+
+    if "http" in link[14:]:
+        return False
     
     # Check domain, we don't care about links that lead to external sites
     if link[0:len(base_url)] != base_url:
@@ -72,15 +75,16 @@ def get_links(html, base_url):
     # Find all strings that match form href="/some/link"
     
     # https://regex101.com/ is useful for testing, more visual
-    # ? is means "lazy", i.e. match as few chars as possible. This matches the first closing double quote rather than the last.
-    href_regex = re.compile(r'href=".*?"')
+    # ? is means "lazy", i.e. match as few chars as possible. This matches the first closing angle bracket rather than the last.
+    href_regex = re.compile(r'href=.*?>')
     hrefs = re.findall(href_regex, html)
 
     # Extract actual links, clean, return only unique links
     for href in hrefs:
-        link = href[6:-1]
-        if link not in links:
-            cleaned_link = clean_link(link, base_url)
+        # href may or may not have double quotes around the link. Remove them if present
+        link = href.replace('"', "")[5:-1].strip()
+        cleaned_link = clean_link(link, base_url)
+        if cleaned_link not in links:
             if is_valid_link(cleaned_link, base_url):
                 links.append(cleaned_link)
 
@@ -120,7 +124,7 @@ def crawl_and_save(base_url, crawl_depth, output_dir):
             searched.append(current_node)
             continue
 
-        print(f"Found {current_node}")
+        print(f"Getting {current_node}")
         
         # Download page at URL
         current_node.html = html_from_url(current_node.url)
